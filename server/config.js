@@ -1,6 +1,6 @@
 require("dotenv").config();
 const express = require("express");
-const todo = require("./router/todo");
+const todo = require("./router/route");
 const con = require("./model/model");
 const cors = require("cors");
 const PORT = process.env.PORT || 5005;
@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use("/todo", todo);
+app.use("/api/todo", todo);
 
 con.connect((err) => {
   if (err) return console.log(err.message);

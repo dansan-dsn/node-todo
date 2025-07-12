@@ -1,39 +1,49 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { TiMinus } from "react-icons/ti";
 import { FaPlus } from "react-icons/fa6";
-import axios from "axios";
+import { TodoInfo } from "../types/todo";
+import { useTodoManagement } from "../hooks/useTodoManagement";
 
 const Todo = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [info, setInfo] = useState("");
-  const [msg, setMsg] = useState(null);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [formError, setFormError] = useState<null | string>(null);
+  const [formData, setFormData] = useState<TodoInfo>({
+    title: "",
+    content: "",
+    checked: false,
+  });
+  const { handleCreate, error } = useTodoManagement();
 
   const handleToggle = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleSubmit = async (e) => {
+  const handleChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    if (!title || !info) {
-      return setMsg("Please fill all the fields");
+
+    if (!formData.title.trim()) {
+      return setFormError("Title Field is required");
     }
-    axios
-      .post("http://localhost:5005/todo/create", {
-        title,
-        info,
-      })
-      .then(() => {
-        setMsg("Todo Added successfully");
-        setTitle("");
-        setInfo("");
-      })
-      .catch((err) => console.log(err));
+
+    if (!formData.content.trim()) {
+      return setFormError("Content Field is required");
+    }
+
+    await handleCreate(formData);
   };
 
   return (
     <div>
-      {msg && <p className="text-teal-500 mx-5 md:mx-56">{msg}</p>}
+      {formError && <p className="text-red-400 mx-5 md:mx-56">{formError}</p>}
+      {error && <p className="text-red-500 mx-5 md:mx-56">{error}</p>}
       <form
         className="bg-neutral-700 p-5 mx-5 md:mx-20 lg:mx-56 cursor-pointer rounded"
         onSubmit={handleSubmit}
@@ -53,8 +63,9 @@ const Todo = () => {
             <div className="mb-3">
               <input
                 type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                value={formData.title}
+                name="title"
+                onChange={handleChange}
                 placeholder="Title"
                 className="p-3 rounded outline-none p-holder"
               />
@@ -62,8 +73,9 @@ const Todo = () => {
             <div>
               <input
                 type="text"
-                value={info}
-                onChange={(e) => setInfo(e.target.value)}
+                value={formData.content}
+                name="content"
+                onChange={handleChange}
                 placeholder="Content"
                 className="p-3 rounded outline-none mb-3 p-holder"
               />

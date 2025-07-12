@@ -7,6 +7,7 @@ A simple Todo list application built with Node.js.
 - Add, edit, delete, and view todos
 - User-friendly interface
 - Built with modern JavaScript(Reactjs) and Node.js
+- Use of typescript for both client side and server side
 
 ## Technology Stack
 
@@ -15,23 +16,24 @@ A simple Todo list application built with Node.js.
 - **MySQL**: Database for storing todos
 - **Reactjs**: Frontend for user interacivity
 - **Tailwind**: Css Framework for user interface
+- **Typescript**:
 
 ## Installation
 
 1. Clone the repository:
    ```bash
    git clone https://github.com/dansan-dsn/Node-Todo.git
-   cd Node-Todo
+   cd Node_Todo
    ```
    a. For react.
    ```bash
-   cd Frontend/todo-app
+   cd client
    npm install
    npm run dev
    ```
    b. For Node
    ```bash
-   cd Backend
+   cd server
    npm install
    npm start
    ```
@@ -39,4 +41,4 @@ A simple Todo list application built with Node.js.
 2.Set up your MySQL database and update the connection
 
 3. open the browser and go to
-    http://localhost:3000
+   http://localhost:3000

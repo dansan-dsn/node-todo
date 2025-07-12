@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { CiSearch } from "react-icons/ci";
 import { IoMdClose } from "react-icons/io";
-import TodoLayout from "./TodoLayout";
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,7 +31,6 @@ const Search = () => {
           )}
         </label>
       </div>
-      <TodoLayout filterSearch={searchQuery} />
     </div>
   );
 };
