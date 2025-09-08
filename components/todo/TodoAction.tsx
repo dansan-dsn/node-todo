@@ -6,13 +6,12 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TodoItem } from "@/types/todo";
+import { FormEvent } from "react";
 
 type TodoActonProps = {
   actionType: "edit" | "delete" | null;
@@ -23,7 +22,7 @@ type TodoActonProps = {
 export const TodoActon = ({ actionType, open, setOpen }: TodoActonProps) => {
   if (!actionType) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
   };
 
