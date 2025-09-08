@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import { TodoItem } from "@/types/todo";
-import { TodoActon } from "@/components/todo/TodoAction";
+import { TodoAction } from "@/components/todo/TodoAction";
+import { cn } from "@/lib/utils";
 
 type TodoItemsProps = {
   todos: TodoItem[];
@@ -18,7 +19,9 @@ type TodoItemsProps = {
 };
 
 export const TodoItems = ({ todos, setTodos }: TodoItemsProps) => {
-  const [openDialog, setOpenDialog] = useState<"edit" | "delete" | null>(null);
+  const [actionType, setActionType] = useState<"edit" | "delete">("edit");
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedTodo, setSelectedTodo] = useState<TodoItem | null>(null);
 
   const handleCheckChange = (todo: TodoItem) => {
     setTodos((prev) =>
@@ -29,12 +32,23 @@ export const TodoItems = ({ todos, setTodos }: TodoItemsProps) => {
   };
 
   const handleEdit = (todo: TodoItem) => {
-    console.log(todo.id);
-    setOpenDialog("edit");
+    setSelectedTodo(todo);
+    setActionType("edit");
+    setOpenDialog(true);
   };
 
   const handleDelete = (todo: TodoItem) => {
-    setOpenDialog("delete");
+    setSelectedTodo(todo);
+    setActionType("delete");
+    setOpenDialog(true);
+  };
+
+  const onUpdate = (todo: TodoItem) => {
+    setTodos((prev) => prev.map((t) => (t.id === todo.id ? todo : t)));
+  };
+
+  const onDelete = (id: string) => {
+    setTodos((prev) => prev.filter((t) => t.id !== id));
   };
 
   return (
@@ -42,7 +56,10 @@ export const TodoItems = ({ todos, setTodos }: TodoItemsProps) => {
       {todos.map((todo) => (
         <div
           key={todo.id}
-          className="flex flex-row justify-between py-5 px-4 border-b"
+          className={cn(
+            "flex items-center justify-between px-4 py-3 border-b transition-colors",
+            todo.completed && "bg-muted/50"
+          )}
         >
           <div className="flex items-center gap-3">
             <Checkbox
@@ -51,7 +68,13 @@ export const TodoItems = ({ todos, setTodos }: TodoItemsProps) => {
               onCheckedChange={() => handleCheckChange(todo)}
               className="cursor-pointer"
             />
-            <Label htmlFor={`todo-${todo.id}`} className="text-lg font-medium">
+            <Label
+              htmlFor={`todo-${todo.id}`}
+              className={cn(
+                "text-base",
+                todo.completed && "line-through text-muted-foreground"
+              )}
+            >
               {todo.title}
             </Label>
           </div>
@@ -76,10 +99,13 @@ export const TodoItems = ({ todos, setTodos }: TodoItemsProps) => {
           </DropdownMenu>
         </div>
       ))}
-      <TodoActon
-        actionType={openDialog}
+      <TodoAction
+        actionType={actionType}
+        selectedTodo={selectedTodo}
         open={!!openDialog}
         setOpen={setOpenDialog}
+        onUpdate={(todo) => onUpdate(todo)}
+        onDelete={(id) => onDelete(id)}
       />
     </>
   );
