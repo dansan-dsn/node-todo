@@ -20,15 +20,15 @@ const TODOS: TodoItem[] = [
 ];
 
 export default function Home() {
-  const [todos] = useState<TodoItem[]>([...TODOS]);
+  const [todos, setTodos] = useState<TodoItem[]>([...TODOS]);
 
   return (
     <div className="max-w-2xl mx-auto my-10">
       <h2 className="text-3xl font-bold text-center">Todo App</h2>
-      <TodoForm />
+      <TodoForm todos={todos} setTodos={setTodos} />
       {todos.length > 0 ? (
         <div className="mt-10 border rounded-md">
-          <TodoItems todos={todos} />
+          <TodoItems todos={todos} setTodos={setTodos} />
         </div>
       ) : (
         <p className="text-center py-10">No Todos available...</p>
