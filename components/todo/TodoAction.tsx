@@ -75,11 +75,15 @@ export const TodoAction = ({
           </DialogHeader>
           <DialogFooter className="mt-3">
             <DialogClose asChild>
-              <Button variant="outline" className="cursor-pointer">
+              <Button
+                variant="destructive"
+                size="sm"
+                className="cursor-pointer"
+              >
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" className="cursor-pointer">
+            <Button type="submit" size="sm" className="cursor-pointer">
               {actionType === "edit" ? "Update" : "Delete"}
             </Button>
           </DialogFooter>

@@ -12,6 +12,7 @@ import { MoreVertical } from "lucide-react";
 import { TodoItem } from "@/types/todo";
 import { TodoAction } from "@/components/todo/TodoAction";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/axios";
 
 type TodoItemsProps = {
   todos: TodoItem[];
@@ -23,12 +24,23 @@ export const TodoItems = ({ todos, setTodos }: TodoItemsProps) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedTodo, setSelectedTodo] = useState<TodoItem | null>(null);
 
-  const handleCheckChange = (todo: TodoItem) => {
-    setTodos((prev) =>
-      prev.map((t) =>
-        t.id === todo.id ? { ...t, completed: !todo.completed } : t
-      )
-    );
+  const sortedTodos = [...todos].sort(
+    (a, b) =>
+      new Date(b.createdAt ?? 0).getTime() -
+      new Date(a.createdAt ?? 0).getTime()
+  );
+
+  const handleCheckChange = async (todo: TodoItem) => {
+    const updated = { ...todo, completed: !todo.completed };
+    setTodos((prev) => prev.map((t) => (t.id === todo.id ? updated : t)));
+
+    try {
+      await api.put(`/${todo.id}`, {
+        completed: !todo.completed,
+      });
+    } catch (err) {
+      console.error("Failed to update todo", err);
+    }
   };
 
   const handleEdit = (todo: TodoItem) => {
@@ -43,17 +55,22 @@ export const TodoItems = ({ todos, setTodos }: TodoItemsProps) => {
     setOpenDialog(true);
   };
 
-  const onUpdate = (todo: TodoItem) => {
+  const onUpdate = async (todo: TodoItem) => {
     setTodos((prev) => prev.map((t) => (t.id === todo.id ? todo : t)));
+    await api.put(`/${todo.id}`, {
+      title: todo.title,
+      completed: todo.completed,
+    });
   };
 
-  const onDelete = (id: string) => {
+  const onDelete = async (id: string) => {
     setTodos((prev) => prev.filter((t) => t.id !== id));
+    await api.delete(`/${id}`);
   };
 
   return (
     <>
-      {todos.map((todo) => (
+      {sortedTodos.map((todo) => (
         <div
           key={todo.id}
           className={cn(

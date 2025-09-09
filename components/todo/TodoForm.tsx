@@ -3,17 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dispatch, FormEvent, SetStateAction, useState } from "react";
 import { TodoItem } from "@/types/todo";
+import { api } from "@/lib/axios";
 
 type TodoFormProp = {
-  todos: TodoItem[];
   setTodos: Dispatch<SetStateAction<TodoItem[]>>;
 };
 
-export const TodoForm = ({ todos, setTodos }: TodoFormProp) => {
+export const TodoForm = ({ setTodos }: TodoFormProp) => {
   const [title, setTitle] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!title.trim()) return setError("Todo Title is required");
@@ -26,6 +26,10 @@ export const TodoForm = ({ todos, setTodos }: TodoFormProp) => {
     };
 
     setTodos((prev) => [...prev, newTodo]);
+    await api.post("/", {
+      title,
+      completed: false,
+    });
 
     setTitle("");
     setError("");
@@ -43,10 +47,11 @@ export const TodoForm = ({ todos, setTodos }: TodoFormProp) => {
         />
         <Button
           type="submit"
+          size="sm"
           className="cursor-pointer"
           disabled={!title.trim()}
         >
-          Add Todo
+          Add
         </Button>
       </form>
       {error && <p className="text-red-700">{error}</p>}
