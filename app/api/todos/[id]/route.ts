@@ -4,10 +4,11 @@ import { NextResponse } from "next/server";
 // PUT update todo
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await context.params; // await the params
   const { title, completed } = await req.json();
+
   const updatedTodo = await prisma.todo.update({
     where: { id },
     data: {
@@ -15,15 +16,16 @@ export async function PUT(
       ...(completed !== undefined && { completed }),
     },
   });
+
   return NextResponse.json(updatedTodo);
 }
 
 // DELETE todo
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await context.params; // await the params
   await prisma.todo.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }
