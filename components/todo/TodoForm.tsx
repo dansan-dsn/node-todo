@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Dispatch, FormEvent, SetStateAction, useState } from "react";
 import { TodoItem } from "@/types/todo";
 import { api } from "@/lib/axios";
+import { TodoCreateSchema, TodoCreateInput } from "@/lib/validations/todo";
+import { ZodError } from "zod";
 
 type TodoFormProp = {
   setTodos: Dispatch<SetStateAction<TodoItem[]>>;
@@ -16,23 +18,23 @@ export const TodoForm = ({ setTodos }: TodoFormProp) => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim()) return setError("Todo Title is required");
+    try {
+      const parsed: TodoCreateInput = TodoCreateSchema.parse({ title });
+      const res = await api.post("/", {
+        title: parsed.title,
+      });
 
-    const newTodo: TodoItem = {
-      id: Date.now().toString(),
-      title,
-      completed: false,
-      createdAt: new Date().toISOString(),
-    };
+      setTodos((prev) => [res.data, ...prev]);
 
-    setTodos((prev) => [...prev, newTodo]);
-    await api.post("/", {
-      title,
-      completed: false,
-    });
-
-    setTitle("");
-    setError("");
+      setTitle("");
+      setError("");
+    } catch (err) {
+      if (err instanceof ZodError) {
+        setError(err.issues[0].message);
+      } else {
+        setError("Something went wrong, try again");
+      }
+    }
   };
 
   return (

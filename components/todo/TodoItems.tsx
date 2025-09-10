@@ -13,6 +13,8 @@ import { TodoItem } from "@/types/todo";
 import { TodoAction } from "@/components/todo/TodoAction";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/axios";
+import { TodoUpdateInput, TodoUpdateSchema } from "@/lib/validations/todo";
+import { ZodError } from "zod";
 
 type TodoItemsProps = {
   todos: TodoItem[];
@@ -24,20 +26,12 @@ export const TodoItems = ({ todos, setTodos }: TodoItemsProps) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedTodo, setSelectedTodo] = useState<TodoItem | null>(null);
 
-  const sortedTodos = [...todos].sort(
-    (a, b) =>
-      new Date(b.createdAt ?? 0).getTime() -
-      new Date(a.createdAt ?? 0).getTime()
-  );
-
   const handleCheckChange = async (todo: TodoItem) => {
-    const updated = { ...todo, completed: !todo.completed };
-    setTodos((prev) => prev.map((t) => (t.id === todo.id ? updated : t)));
-
     try {
-      await api.put(`/${todo.id}`, {
+      const { data } = await api.put(`/${todo.id}`, {
         completed: !todo.completed,
       });
+      setTodos((prev) => prev.map((t) => (t.id === todo.id ? data : t)));
     } catch (err) {
       console.error("Failed to update todo", err);
     }
@@ -56,11 +50,20 @@ export const TodoItems = ({ todos, setTodos }: TodoItemsProps) => {
   };
 
   const onUpdate = async (todo: TodoItem) => {
-    setTodos((prev) => prev.map((t) => (t.id === todo.id ? todo : t)));
-    await api.put(`/${todo.id}`, {
-      title: todo.title,
-      completed: todo.completed,
-    });
+    try {
+      const parsed: TodoUpdateInput = TodoUpdateSchema.parse({
+        title: todo.title,
+        completed: todo.completed,
+      });
+      const { data } = await api.put(`/${todo.id}`, parsed);
+      setTodos((prev) => prev.map((t) => (t.id === todo.id ? data : t)));
+    } catch (e) {
+      if (e instanceof ZodError) {
+        console.error(e.issues[0].message);
+      } else {
+        console.error("Update failed", e);
+      }
+    }
   };
 
   const onDelete = async (id: string) => {
@@ -70,7 +73,7 @@ export const TodoItems = ({ todos, setTodos }: TodoItemsProps) => {
 
   return (
     <>
-      {sortedTodos.map((todo) => (
+      {todos.map((todo) => (
         <div
           key={todo.id}
           className={cn(
