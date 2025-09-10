@@ -5,13 +5,15 @@ import { api } from "@/lib/axios";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Home() {
-  const { data: todos, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["todos"],
     queryFn: async () => {
       const res = await api.get("/");
       return res.data;
     },
   });
+
+  const todos = data ?? [];
 
   return (
     <div className="max-w-2xl mx-auto my-10">

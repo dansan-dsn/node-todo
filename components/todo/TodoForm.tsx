@@ -22,7 +22,10 @@ export const TodoForm = () => {
       setError("");
     } catch (err) {
       if (err instanceof ZodError) setError(err.issues[0].message);
-      else setError("Something went wrong, try again");
+      else {
+        setError("Something went wrong, try again");
+        console.log("Creation Error", err);
+      }
     }
   };
 
