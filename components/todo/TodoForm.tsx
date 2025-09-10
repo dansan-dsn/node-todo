@@ -1,39 +1,39 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dispatch, FormEvent, SetStateAction, useState } from "react";
-import { TodoItem } from "@/types/todo";
+import { FormEvent, useState } from "react";
 import { api } from "@/lib/axios";
 import { TodoCreateSchema, TodoCreateInput } from "@/lib/validations/todo";
 import { ZodError } from "zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-type TodoFormProp = {
-  setTodos: Dispatch<SetStateAction<TodoItem[]>>;
-};
-
-export const TodoForm = ({ setTodos }: TodoFormProp) => {
+export const TodoForm = () => {
+  const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [error, setError] = useState("");
+
+  const createMutation = useMutation({
+    mutationFn: async (input: TodoCreateInput) => {
+      const res = await api.post("/", input);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
+    },
+  });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     try {
       const parsed: TodoCreateInput = TodoCreateSchema.parse({ title });
-      const res = await api.post("/", {
-        title: parsed.title,
-      });
-
-      setTodos((prev) => [res.data, ...prev]);
+      await createMutation.mutateAsync({ title: parsed.title });
 
       setTitle("");
       setError("");
     } catch (err) {
-      if (err instanceof ZodError) {
-        setError(err.issues[0].message);
-      } else {
-        setError("Something went wrong, try again");
-      }
+      if (err instanceof ZodError) setError(err.issues[0].message);
+      else setError("Something went wrong, try again");
     }
   };
 

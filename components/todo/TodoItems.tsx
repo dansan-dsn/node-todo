@@ -1,5 +1,5 @@
 "use client";
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -15,23 +15,43 @@ import { cn } from "@/lib/utils";
 import { api } from "@/lib/axios";
 import { TodoUpdateInput, TodoUpdateSchema } from "@/lib/validations/todo";
 import { ZodError } from "zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type TodoItemsProps = {
   todos: TodoItem[];
-  setTodos: Dispatch<SetStateAction<TodoItem[]>>;
 };
 
-export const TodoItems = ({ todos, setTodos }: TodoItemsProps) => {
+export const TodoItems = ({ todos }: TodoItemsProps) => {
   const [actionType, setActionType] = useState<"edit" | "delete">("edit");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedTodo, setSelectedTodo] = useState<TodoItem | null>(null);
 
+  const queryClient = useQueryClient();
+
+  // React Query Mutations
+  const updateTodo = useMutation({
+    mutationFn: async (todo: TodoUpdateInput & { id: string }) => {
+      const res = await api.put(`/${todo.id}`, todo);
+      return res.data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
+  });
+
+  const deleteTodo = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await api.delete(`/${id}`);
+      return res.data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
+  });
+
+  // Hanlders
   const handleCheckChange = async (todo: TodoItem) => {
     try {
-      const { data } = await api.put(`/${todo.id}`, {
+      const validated = TodoUpdateSchema.parse({
         completed: !todo.completed,
       });
-      setTodos((prev) => prev.map((t) => (t.id === todo.id ? data : t)));
+      await updateTodo.mutateAsync({ id: todo.id, ...validated });
     } catch (err) {
       console.error("Failed to update todo", err);
     }
@@ -51,12 +71,11 @@ export const TodoItems = ({ todos, setTodos }: TodoItemsProps) => {
 
   const onUpdate = async (todo: TodoItem) => {
     try {
-      const parsed: TodoUpdateInput = TodoUpdateSchema.parse({
+      const validated: TodoUpdateInput = TodoUpdateSchema.parse({
         title: todo.title,
         completed: todo.completed,
       });
-      const { data } = await api.put(`/${todo.id}`, parsed);
-      setTodos((prev) => prev.map((t) => (t.id === todo.id ? data : t)));
+      await updateTodo.mutateAsync({ id: todo.id, ...validated });
     } catch (e) {
       if (e instanceof ZodError) {
         console.error(e.issues[0].message);
@@ -67,8 +86,7 @@ export const TodoItems = ({ todos, setTodos }: TodoItemsProps) => {
   };
 
   const onDelete = async (id: string) => {
-    setTodos((prev) => prev.filter((t) => t.id !== id));
-    await api.delete(`/${id}`);
+    await deleteTodo.mutateAsync(id);
   };
 
   return (
