@@ -101,15 +101,15 @@ See [Next.js deployment guide](https://nextjs.org/docs/app/building-your-applica
 
 ## ✅ Development Checklist
 
-- [ ] Run `bun install` to install dependencies
-- [ ] Run `bun dev` to start the development server
-- [ ] Implement basic Todo CRUD with local state
-- [ ] Set up Prisma and configure the database
-- [ ] Create Next.js API routes for todos
-- [ ] Integrate React Query for fetching and mutating todos
-- [ ] Add Zod validation for inputs
-- [ ] Use Shadcn UI components for styling
-- [ ] Add loading/error states with React Query
+- [x] Run `bun install` to install dependencies
+- [x] Run `bun dev` to start the development server
+- [x] Implement basic Todo CRUD with local state
+- [x] Set up Prisma and configure the database
+- [x] Create Next.js API routes for todos
+- [x] Integrate React Query for fetching and mutating todos
+- [x] Add Zod validation for inputs
+- [x] Use Shadcn UI components for styling
+- [x] Add loading/error states with React Query
 - [ ] Test and deploy the app to Vercel
 
 ---

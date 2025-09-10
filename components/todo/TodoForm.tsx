@@ -2,32 +2,21 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormEvent, useState } from "react";
-import { api } from "@/lib/axios";
 import { TodoCreateSchema, TodoCreateInput } from "@/lib/validations/todo";
 import { ZodError } from "zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryMutation } from "@/context/useMutation";
 
 export const TodoForm = () => {
-  const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [error, setError] = useState("");
-
-  const createMutation = useMutation({
-    mutationFn: async (input: TodoCreateInput) => {
-      const res = await api.post("/", input);
-      return res.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-    },
-  });
+  const { createTodo } = useQueryMutation();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     try {
       const parsed: TodoCreateInput = TodoCreateSchema.parse({ title });
-      await createMutation.mutateAsync({ title: parsed.title });
+      await createTodo.mutateAsync({ title: parsed.title });
 
       setTitle("");
       setError("");

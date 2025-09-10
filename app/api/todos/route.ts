@@ -18,9 +18,9 @@ export async function POST(req: Request) {
     const todo = await prisma.todo.create({ data });
 
     return NextResponse.json(todo);
-  } catch (err) {
-    if (err instanceof ZodError) {
-      return NextResponse.json({ error: err.message }, { status: 400 });
+  } catch (e) {
+    if (e instanceof ZodError) {
+      return NextResponse.json({ error: e.issues[0].message }, { status: 400 });
     }
     return NextResponse.json(
       { error: "Internal server error" },

@@ -12,10 +12,10 @@ import { MoreVertical } from "lucide-react";
 import { TodoItem } from "@/types/todo";
 import { TodoAction } from "@/components/todo/TodoAction";
 import { cn } from "@/lib/utils";
-import { api } from "@/lib/axios";
 import { TodoUpdateInput, TodoUpdateSchema } from "@/lib/validations/todo";
 import { ZodError } from "zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { dateFormat, timeFormat } from "@/lib/date";
+import { useQueryMutation } from "@/context/useMutation";
 
 type TodoItemsProps = {
   todos: TodoItem[];
@@ -25,25 +25,7 @@ export const TodoItems = ({ todos }: TodoItemsProps) => {
   const [actionType, setActionType] = useState<"edit" | "delete">("edit");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedTodo, setSelectedTodo] = useState<TodoItem | null>(null);
-
-  const queryClient = useQueryClient();
-
-  // React Query Mutations
-  const updateTodo = useMutation({
-    mutationFn: async (todo: TodoUpdateInput & { id: string }) => {
-      const res = await api.put(`/${todo.id}`, todo);
-      return res.data;
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
-  });
-
-  const deleteTodo = useMutation({
-    mutationFn: async (id: string) => {
-      const res = await api.delete(`/${id}`);
-      return res.data;
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
-  });
+  const { updateTodo, deleteTodo } = useQueryMutation();
 
   // Hanlders
   const handleCheckChange = async (todo: TodoItem) => {
@@ -106,15 +88,20 @@ export const TodoItems = ({ todos }: TodoItemsProps) => {
               onCheckedChange={() => handleCheckChange(todo)}
               className="cursor-pointer"
             />
-            <Label
-              htmlFor={`todo-${todo.id}`}
-              className={cn(
-                "text-base",
-                todo.completed && "line-through text-muted-foreground"
-              )}
-            >
-              {todo.title}
-            </Label>
+            <div>
+              <Label
+                htmlFor={`todo-${todo.id}`}
+                className={cn(
+                  "text-base",
+                  todo.completed && "line-through text-muted-foreground"
+                )}
+              >
+                {todo.title}
+              </Label>
+              <span className="text-xs dark:text-neutral-600 italic">
+                {dateFormat(todo.createdAt)} - {timeFormat(todo.createdAt)}
+              </span>
+            </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

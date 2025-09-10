@@ -23,10 +23,7 @@ export async function PUT(
     if (e instanceof ZodError) {
       return NextResponse.json({ error: e.issues[0].message }, { status: 400 });
     }
-    return NextResponse.json(
-      { error: "Failed to update todo" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: e }, { status: 500 });
   }
 }
 
